@@ -1,13 +1,18 @@
 # app/infrastructure/db/database.py
 
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 
-# MSSQL bağlantı URL'inizi buraya yazın:
-# Örnek: "mssql+pymssql://sa:SecretPwd@localhost:1433/excel_importer"
-SQLALCHEMY_DATABASE_URL = (
-    "mssql+pymssql://sa:O159s456D@localhost:1433/excel_importer"
+# Ortam degiskenlerini .env dosyasindan yukle
+load_dotenv()
+
+# Bağlantı dizesi ortam değişkeninden okunur, yoksa varsayılan değeri kullanılır
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "mssql+pymssql://sa:O159s456D@localhost:1433/excel_importer",
 )
 
 # Engine: pymssql kullanıyorsanız fast_executemany parametresi kaldırıldı

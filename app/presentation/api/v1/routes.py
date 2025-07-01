@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.application.use_cases.upload_data_usecase import UploadDataUseCase
+from app.application.use_cases.commit_data_usecase import CommitDataUseCase
 from app.infrastructure.db.database import get_db
 from app.persistence.repositories import ImportedRecordRepository
 
@@ -61,7 +62,11 @@ async def upload_commit(
     db: Session = Depends(get_db)
 ):
     repo = ImportedRecordRepository(db)
-    # Örnek olarak ilk sütunu 'name' alanına kaydediyoruz
-    names = [row[0] for row in payload.rows]
-    created = repo.bulk_create(names)
-    return {"inserted": len(created)}
+    use_case = CommitDataUseCase(repo)
+    try:
+        inserted = use_case.commit(payload.columns, payload.rows)
+        return {"inserted": inserted}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Veriler kaydedilirken hata oluştu")
